@@ -3,6 +3,7 @@ package com.project.shopapp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+// App build by BDH
 @SpringBootApplication
 public class ShopappApplication {
 
