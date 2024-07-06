@@ -3,7 +3,8 @@ package com.project.shopapp.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -39,7 +40,7 @@ public class Order {
     private String note;
 
     @Column(name = "order_date")
-    private LocalDateTime orderDate;
+    private Date orderDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -55,7 +56,7 @@ public class Order {
     private String shippingAddress;
 
     @Column(name = "shipping_date")
-    private LocalDateTime shippingDate;
+    private LocalDate shippingDate;
 
     @Column(name = "tracking_number")
     private String trackingNumber;

@@ -1,7 +1,10 @@
 package com.project.shopapp.controller;
 
 import com.project.shopapp.dto.OrderDto;
+import com.project.shopapp.entity.Order;
+import com.project.shopapp.service.OrderService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -10,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("${api.base.path}/orders")
 public class OrderController {
 
+    private final OrderService orderService;
     @PostMapping("")
     public ResponseEntity<?> createOrder(@Valid @RequestBody OrderDto orderDto, BindingResult result) {
 
@@ -24,8 +29,9 @@ public class OrderController {
                 return ResponseEntity.badRequest().body(errorMessages);
             }
 
-            return ResponseEntity.ok("Insert new order: " + orderDto.toString());
+            Order newOrder =  orderService.createOrder(orderDto);
 
+            return ResponseEntity.ok().body(newOrder);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -40,10 +46,11 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/{user_id}")
-    public ResponseEntity<String> getOrderByUserId(@Valid @PathVariable Long user_id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrderByOrderId(@Valid @PathVariable Long id) {
         try {
-            return ResponseEntity.ok("Get all orders of user has  user_id = " + user_id);
+            Order order = orderService.getOrderById(id);
+            return ResponseEntity.ok(order);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -51,11 +58,22 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/user/{user_id}")
+    public ResponseEntity<?> getOrderByUserId(@Valid @PathVariable("user_id") Long userId) {
+        try {
+            List<Order> orders = orderService.findByUserId(userId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateOrder(@PathVariable Long id, @Valid @RequestBody OrderDto orderDto) {
+    public ResponseEntity<?> updateOrder(@PathVariable Long id, @Valid @RequestBody OrderDto orderDto) {
         try {
-            return ResponseEntity.ok("Update order has id = " + id + " and new order is: " + orderDto.toString());
+            Order order = orderService.updateOrder(orderDto, id);
+            return ResponseEntity.ok(order);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -65,7 +83,8 @@ public class OrderController {
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
         try {
             // Delete soft: update active field is false.
-            return ResponseEntity.ok("Delete order by id = " + id);
+            orderService.deleteOder(id);
+            return ResponseEntity.ok("Delete order successfully with order id = " + id + "!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
