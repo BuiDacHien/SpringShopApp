@@ -1,5 +1,6 @@
 package com.project.shopapp.controller;
 
+import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dto.OrderDetailDto;
 import com.project.shopapp.entity.OrderDetail;
 import com.project.shopapp.response.OrderDetailResponse;
@@ -19,6 +20,8 @@ import java.util.List;
 public class OrderDetailController {
 
     private final OrderDetailService orderDetailService;
+    private final LocalizationUtils localizationUtils;
+
     @PostMapping("")
     public ResponseEntity<?> createOrderDetail(@Valid @RequestBody OrderDetailDto orderDetailDto, BindingResult result) {
         try {

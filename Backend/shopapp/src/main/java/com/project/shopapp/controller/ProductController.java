@@ -1,6 +1,7 @@
 package com.project.shopapp.controller;
 
 import com.github.javafaker.Faker;
+import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dto.ProductDto;
 import com.project.shopapp.dto.ProductImageDto;
 import com.project.shopapp.entity.Product;
@@ -38,6 +39,7 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
+    private final LocalizationUtils localizationUtils;
 
     @PostMapping(value = "")
     public ResponseEntity<?> createProduct(@Valid @RequestBody ProductDto productDto,

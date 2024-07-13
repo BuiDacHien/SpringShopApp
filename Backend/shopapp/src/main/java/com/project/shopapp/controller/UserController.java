@@ -2,7 +2,11 @@ package com.project.shopapp.controller;
 
 import com.project.shopapp.dto.*;
 import com.project.shopapp.entity.User;
+import com.project.shopapp.response.LoginResponse;
+import com.project.shopapp.response.RegisterResponse;
 import com.project.shopapp.service.UserService;
+import com.project.shopapp.utils.CommonStrings;
+import com.project.shopapp.components.LocalizationUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final LocalizationUtils localizationUtils;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserDto userDto, BindingResult result) {
@@ -29,13 +34,18 @@ public class UserController {
             }
 
             if (!userDto.getPassword().equals(userDto.getRetypePassword())) {
-                return ResponseEntity.badRequest().body("Retype password must be likely password");
+                return ResponseEntity.badRequest().body(localizationUtils.getLocalizedMessage(CommonStrings.RETYPE_PASSWORD_NOT_MATCH));
             }
 
             User newUser = userService.createUser(userDto);
-            return ResponseEntity.ok("Register new user: " + newUser.toString());
+            return ResponseEntity.ok(RegisterResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(CommonStrings.REGISTER_SUCCESSFULLY))
+                            .user(newUser)
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(RegisterResponse.builder()
+                    .message(localizationUtils.getLocalizedMessage(CommonStrings.REGISTER_FAILED, e.getMessage()))
+                    .build());
         }
     }
 
@@ -46,13 +56,18 @@ public class UserController {
                 List<String> errorMessages = result.getFieldErrors()
                         .stream().map(FieldError::getDefaultMessage)
                         .toList();
-                return ResponseEntity.badRequest().body(errorMessages);
+                return ResponseEntity.badRequest().body(LoginResponse.builder().message(errorMessages.toString()).build());
             }
 
-            String token = userService.loginUser(userLoginDto);
-            return ResponseEntity.ok("Login user: " + token);
+            String token = userService.loginUser(userLoginDto.getPhoneNumber(), userLoginDto.getPassword());
+            return ResponseEntity.ok(LoginResponse.builder()
+                    .message(localizationUtils.getLocalizedMessage(CommonStrings.LOGIN_SUCCESSFULLY))
+                    .token(token)
+                    .build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(LoginResponse.builder()
+                    .message(localizationUtils.getLocalizedMessage(CommonStrings.LOGIN_FAILED, e.getMessage()))
+                    .build());
         }
     }
 }

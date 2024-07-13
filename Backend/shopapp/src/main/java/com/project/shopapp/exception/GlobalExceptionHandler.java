@@ -37,8 +37,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(DataAlreadyExist.class)
-    public ResponseEntity<ErrorDetails> handleDataAlreadyExistException(DataAlreadyExist exception,
+    @ExceptionHandler(DataAlreadyExistException.class)
+    public ResponseEntity<ErrorDetails> handleDataAlreadyExistException(DataAlreadyExistException exception,
                                                                         WebRequest webRequest) {
 
         ErrorDetails errorDetails = new ErrorDetails(
@@ -49,15 +49,27 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(InValidParamException.class)
-    public ResponseEntity<ErrorDetails> handleExceedSizeOfImage(DataAlreadyExist exception,
-                                                                        WebRequest webRequest) {
+    @ExceptionHandler(PermissionDenyException.class)
+    public ResponseEntity<ErrorDetails> handlePermissionDenyException(PermissionDenyException exception,
+                                                                      WebRequest webRequest) {
 
         ErrorDetails errorDetails = new ErrorDetails(
                 LocalDateTime.now(),
                 exception.getMessage(),
                 webRequest.getDescription(false)
         );
-        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(InValidParamException.class)
+    public ResponseEntity<ErrorDetails> handleExceedSizeOfImage(InValidParamException exception,
+                                                                WebRequest webRequest) {
+
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(),
+                exception.getMessage(),
+                webRequest.getDescription(false)
+        );
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 }

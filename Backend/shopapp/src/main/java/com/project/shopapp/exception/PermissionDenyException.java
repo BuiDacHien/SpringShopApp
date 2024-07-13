@@ -3,9 +3,9 @@ package com.project.shopapp.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class InValidParamException extends Exception {
-    public InValidParamException(String message) {
+@ResponseStatus(value = HttpStatus.FORBIDDEN)
+public class PermissionDenyException extends Exception {
+    public PermissionDenyException(String message) {
         super(message);
     }
 }

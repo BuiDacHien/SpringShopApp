@@ -21,8 +21,19 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  messages:
+    basename: i18n/lang
+    encoding: UTF-8
+    default-locale: en
 
 # Create variable environment of api request
 api:
   base:
     path: api/v1
+
+# Config JWT
+jwt:
+  expiration: 2592000 # 30 days
+  secretKey: daf66e01593f61a15b857cf433aae03a005812b31234e149036bcc8dee755dbb
+
+

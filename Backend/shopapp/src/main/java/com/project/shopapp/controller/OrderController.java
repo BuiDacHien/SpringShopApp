@@ -1,5 +1,6 @@
 package com.project.shopapp.controller;
 
+import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dto.OrderDto;
 import com.project.shopapp.entity.Order;
 import com.project.shopapp.service.OrderService;
@@ -18,6 +19,8 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final LocalizationUtils localizationUtils;
+
     @PostMapping("")
     public ResponseEntity<?> createOrder(@Valid @RequestBody OrderDto orderDto, BindingResult result) {
 
