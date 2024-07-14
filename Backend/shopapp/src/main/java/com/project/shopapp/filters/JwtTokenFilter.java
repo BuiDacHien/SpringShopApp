@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -79,6 +78,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         List<Pair<String, String>> byPassTokens = Arrays.asList(
                 Pair.of(String.format("%s/products", apiBasePath), "GET"),
                 Pair.of(String.format("%s/categories", apiBasePath), "GET"),
+                Pair.of(String.format("%s/roles", apiBasePath), "GET"),
                 Pair.of(String.format("%s/users/register", apiBasePath), "POST"),
                 Pair.of(String.format("%s/users/login", apiBasePath), "POST")
         );
