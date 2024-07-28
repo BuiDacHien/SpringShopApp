@@ -10,12 +10,14 @@ import com.project.shopapp.response.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.List;
+
 public interface ProductService {
     Product createProduct(ProductDto productDto);
 
     Product getProductById(Long id);
 
-    Page<ProductResponse> getAllProducts(PageRequest pageRequest);
+    Page<ProductResponse> getAllProducts(String keyword, Long categoryId, PageRequest pageRequest);
 
     Product updateProduct(Long id, ProductDto productDto);
 
@@ -25,4 +27,5 @@ public interface ProductService {
 
     ProductImage createProductImage(Long productId, ProductImageDto productImageDto) throws InValidParamException;
 
+    List<Product> findProductsByIds(List<Long> productIds);
 }

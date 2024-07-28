@@ -28,10 +28,8 @@ public class JwtTokenUtil {
         // properties of user -> claims
         Map<String, Object> claims = new HashMap<>();
         claims.put("phoneNumber", user.getPhoneNumber());
-
-
+        claims.put("userId", user.getId());
         try {
-
             String token = Jwts.builder()
                     .setClaims(claims)
                     .setSubject(user.getPhoneNumber())
@@ -41,7 +39,6 @@ public class JwtTokenUtil {
             return token;
         } catch (Exception e) {
             throw new InValidParamException("Can't create jwt token, because: " + e.getMessage());
-
         }
     }
 

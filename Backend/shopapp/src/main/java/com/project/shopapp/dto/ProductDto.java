@@ -18,8 +18,8 @@ public class ProductDto {
     @Size(min = 5, max = 300, message = "Product name must be between 5 and 300 characters")
     private String name;
 
-    @Min(0)
-    @Max(50000000)
+    @Min(value = 0, message = "Price must be greater than or equal to 0")
+    @Max(value = 50000000, message = "Price must be less than or equal to 50000000")
     private Float price;
 
     private String thumbnail;

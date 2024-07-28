@@ -5,6 +5,7 @@ import com.project.shopapp.dto.OrderDetailDto;
 import com.project.shopapp.entity.OrderDetail;
 import com.project.shopapp.response.OrderDetailResponse;
 import com.project.shopapp.service.OrderDetailService;
+import com.project.shopapp.utils.CommonStrings;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +92,8 @@ public class OrderDetailController {
         try {
             // Hard delete
             orderDetailService.deleteOrderDetail(id);
-            return ResponseEntity.ok("Delete order detail by id = " + id + " successfully !");
+            return ResponseEntity.ok(localizationUtils
+                    .getLocalizedMessage(CommonStrings.DELETE_ORDER_DETAIL_SUCCESSFULLY));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

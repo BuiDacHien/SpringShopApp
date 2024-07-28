@@ -36,4 +36,11 @@ jwt:
   expiration: 2592000 # 30 days
   secretKey: daf66e01593f61a15b857cf433aae03a005812b31234e149036bcc8dee755dbb
 
+#logging.level.org.springframework.security: DEBUG
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
 

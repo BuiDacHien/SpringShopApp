@@ -14,6 +14,7 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ProductImageDto {
 
     @JsonProperty("image_url")

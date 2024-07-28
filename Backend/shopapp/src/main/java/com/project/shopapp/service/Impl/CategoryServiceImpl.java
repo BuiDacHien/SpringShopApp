@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
+    @Transactional
     public Category createCategory(CategoryDto categoryDto) {
         Category newCategory = Category.builder().name(categoryDto.getName()).build();
         return categoryRepository.save(newCategory);
@@ -36,6 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public Category updateCategory(CategoryDto categoryDto, Long id) {
         Category existCategory = getCategoryById(id);
         existCategory.setName(categoryDto.getName());
@@ -44,6 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteCategory(Long id) {
         Category existCategory = getCategoryById(id);
         categoryRepository.deleteById(id);

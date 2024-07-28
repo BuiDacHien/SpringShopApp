@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +30,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepository productImageRepository;
 
     @Override
+    @Transactional
     public Product createProduct(ProductDto productDto) {
         Category categoryExist = categoryRepository.findById(productDto.getCategoryId()).orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + productDto.getCategoryId()));
 
@@ -44,16 +47,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+//        return productRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        Optional<Product> optionalProduct = productRepository.getDetailProduct(id);
+        if(optionalProduct.isPresent()) {
+            return optionalProduct.get();
+        }
+        throw new ResourceNotFoundException("Product not found with id: " + id);
     }
 
     @Override
-    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest).map(ProductResponse::mapFromProduct);
+    public List<Product> findProductsByIds(List<Long> productIds) {
+        return productRepository.findProductsByIds(productIds);
     }
 
     @Override
+    public Page<ProductResponse> getAllProducts(String keyword, Long categoryId, PageRequest pageRequest) {
+        Page<Product> products = productRepository.searchProducts(categoryId, keyword, pageRequest);
+        return products.map(ProductResponse::mapFromProduct);
+    }
+
+    @Override
+    @Transactional
     public Product updateProduct(Long id, ProductDto productDto) {
 
         Product productExist = getProductById(id);
@@ -71,6 +86,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public void deleteProduct(Long id) {
         Optional<Product> productExist = productRepository.findById(id);
         productExist.ifPresent(productRepository::delete);
@@ -82,6 +98,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductImage createProductImage(Long productId, ProductImageDto productImageDto) throws InValidParamException {
         Product productExist = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
@@ -97,4 +114,6 @@ public class ProductServiceImpl implements ProductService {
 
         return productImageRepository.save(newProductImage);
     }
+
+    
 }

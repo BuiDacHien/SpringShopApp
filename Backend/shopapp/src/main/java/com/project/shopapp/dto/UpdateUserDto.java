@@ -1,36 +1,27 @@
 package com.project.shopapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
 import java.util.Date;
 
-@Builder
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserDto {
+public class UpdateUserDto {
     @JsonProperty("full_name")
     private String fullName;
 
     @JsonProperty("phone_number")
-    @NotBlank(message = "Phone number must be required")
     private String phoneNumber;
-
-    @Email(message = "Must format of email!")
-    private String email;
 
     private String address;
 
-    @NotBlank(message = "Password must be required")
+    @JsonProperty("password")
     private String password;
 
-    @NotBlank(message = "Retype Password must be required")
     @JsonProperty("retype_password")
     private String retypePassword;
 
@@ -42,8 +33,4 @@ public class UserDto {
 
     @JsonProperty("google_account_id")
     private int googleAccountId;
-
-    @NotNull(message = "Role id must be not null")
-    @JsonProperty("role_id")
-    private Long roleId;
 }

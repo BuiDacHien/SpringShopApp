@@ -3,10 +3,17 @@ package com.project.shopapp.controller;
 import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dto.CategoryDto;
 import com.project.shopapp.entity.Category;
+import com.project.shopapp.response.CategoryResponse;
+import com.project.shopapp.response.UpdateCategoryResponse;
 import com.project.shopapp.service.CategoryService;
+import com.project.shopapp.utils.CommonStrings;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -25,16 +32,19 @@ public class CategoryController {
     @PostMapping("")
     public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryDto categoryDto, BindingResult result) {
         try {
-            if (result.hasErrors()) {
+            CategoryResponse categoryResponse = new CategoryResponse();
+            if(result.hasErrors()) {
                 List<String> errorMessages = result.getFieldErrors()
-                        .stream().map(FieldError::getDefaultMessage)
+                        .stream()
+                        .map(FieldError::getDefaultMessage)
                         .toList();
-                return ResponseEntity.badRequest().body(errorMessages);
+                categoryResponse.setMessage(localizationUtils.getLocalizedMessage(CommonStrings.INSERT_CATEGORY_FAILED));
+                categoryResponse.setErrors(errorMessages);
+                return ResponseEntity.badRequest().body(categoryResponse);
             }
-
-            Category newCategory = categoryService.createCategory(categoryDto);
-
-            return ResponseEntity.ok("Insert new category: " + newCategory.toString() + "successfully");
+            Category category = categoryService.createCategory(categoryDto);
+            categoryResponse.setCategory(category);
+            return ResponseEntity.ok(categoryResponse);
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -57,8 +67,10 @@ public class CategoryController {
                         .toList();
                 return ResponseEntity.badRequest().body(errorMessages);
             }
-            Category category = categoryService.updateCategory(categoryDto, id);
-            return ResponseEntity.ok("update category by id = " + id + " and new category is: " + category.toString());
+            UpdateCategoryResponse updateCategoryResponse = new UpdateCategoryResponse();
+            categoryService.updateCategory(categoryDto, id);
+            updateCategoryResponse.setMessage(localizationUtils.getLocalizedMessage(CommonStrings.UPDATE_CATEGORY_SUCCESSFULLY));
+            return ResponseEntity.ok(updateCategoryResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -68,6 +80,8 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return ResponseEntity.ok("delete category by id = " + id);
+        return ResponseEntity.ok(localizationUtils.getLocalizedMessage(CommonStrings.DELETE_CATEGORY_SUCCESSFULLY));
     }
+
+
 }
