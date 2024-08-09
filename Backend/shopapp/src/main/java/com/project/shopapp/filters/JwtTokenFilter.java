@@ -80,24 +80,36 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of(String.format("%s/categories", apiBasePath), "GET"),
                 Pair.of(String.format("%s/roles", apiBasePath), "GET"),
                 Pair.of(String.format("%s/users/register", apiBasePath), "POST"),
-                Pair.of(String.format("%s/users/login", apiBasePath), "POST")
+                Pair.of(String.format("%s/users/login", apiBasePath), "POST"),
+
+                // Health Check
+                Pair.of(String.format("%s/healthcheck/health", apiBasePath), "GET"),
+                Pair.of(String.format("%s/actuator/**", apiBasePath), "GET"),
+
+                // Swagger
+                Pair.of("/api-docs","GET"),
+                Pair.of("/api-docs/**","GET"),
+                Pair.of("/swagger-resources","GET"),
+                Pair.of("/swagger-resources/**","GET"),
+                Pair.of("/configuration/ui","GET"),
+                Pair.of("/configuration/security","GET"),
+                Pair.of("/swagger-ui/**","GET"),
+                Pair.of("/swagger-ui.html", "GET"),
+                Pair.of("/swagger-ui/index.html", "GET")
         );
 
         String requestPath = request.getServletPath();
         String requestMethod = request.getMethod();
 
-        // Allow access to %s/orders
-        if (requestPath.equals(String.format("%s/orders", apiBasePath))
-                && requestMethod.equals("GET")) {
-            return true;
-        }
+        for (Pair<String, String> token : byPassTokens) {
+            String pathPattern = token.getFirst().replace("**", ".*");
+            String method = token.getSecond();
 
-        for (Pair<String, String> byPassToken : byPassTokens) {
-            if (request.getServletPath().contains(byPassToken.getFirst()) && request.getMethod().equals(byPassToken.getSecond())) {
+            // Check if the request path and method match any pair in the bypassTokens list
+            if (requestPath.matches(pathPattern) && requestMethod.equalsIgnoreCase(method)) {
                 return true;
             }
         }
-
         return false;
     }
 

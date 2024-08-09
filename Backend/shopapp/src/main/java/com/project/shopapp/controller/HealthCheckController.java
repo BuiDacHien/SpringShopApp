@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("${api.prefix}/healthcheck")
+@RequestMapping("${api.base.path}/healthcheck")
 @AllArgsConstructor
 public class HealthCheckController {
     private final CategoryService categoryService;

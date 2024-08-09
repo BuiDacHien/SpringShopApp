@@ -6,9 +6,12 @@ import com.project.shopapp.entity.OrderDetail;
 import com.project.shopapp.response.OrderDetailResponse;
 import com.project.shopapp.service.OrderDetailService;
 import com.project.shopapp.utils.CommonStrings;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,7 @@ public class OrderDetailController {
     private final LocalizationUtils localizationUtils;
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<?> createOrderDetail(@Valid @RequestBody OrderDetailDto orderDetailDto, BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -70,6 +74,8 @@ public class OrderDetailController {
 
 
     @PutMapping("/{id}")
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<?> updateOrderDetail(@PathVariable Long id, @Valid @RequestBody OrderDetailDto orderDetailDto, BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -88,6 +94,8 @@ public class OrderDetailController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<String> deleteOrderDetail(@PathVariable Long id) {
         try {
             // Hard delete

@@ -30,6 +30,7 @@ public class CategoryController {
 
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryDto categoryDto, BindingResult result) {
         try {
             CategoryResponse categoryResponse = new CategoryResponse();
@@ -59,6 +60,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDto categoryDto, BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -78,10 +80,9 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.ok(localizationUtils.getLocalizedMessage(CommonStrings.DELETE_CATEGORY_SUCCESSFULLY));
     }
-
-
 }

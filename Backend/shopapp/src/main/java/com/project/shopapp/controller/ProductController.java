@@ -1,6 +1,5 @@
 package com.project.shopapp.controller;
 
-import com.github.javafaker.Faker;
 import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dto.ProductDto;
 import com.project.shopapp.dto.ProductImageDto;
@@ -8,8 +7,11 @@ import com.project.shopapp.entity.Product;
 import com.project.shopapp.entity.ProductImage;
 import com.project.shopapp.response.ProductListResponse;
 import com.project.shopapp.response.ProductResponse;
+import com.project.shopapp.service.ProductRedisService;
 import com.project.shopapp.service.ProductService;
 import com.project.shopapp.utils.CommonStrings;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -42,9 +45,11 @@ public class ProductController {
 
     private final ProductService productService;
     private final LocalizationUtils localizationUtils;
+    private final ProductRedisService productRedisService;
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @PostMapping(value = "")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createProduct(@Valid @RequestBody ProductDto productDto,
                                            BindingResult result) {
         try {
@@ -63,6 +68,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/upload_images/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> uploadProductImage(@PathVariable Long productId, @ModelAttribute("files") List<MultipartFile> files) {
 
         try {
@@ -162,21 +168,32 @@ public class ProductController {
         try {
             PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("id").ascending());
 
+            int totalPages = 0;
+
             logger.info(String.format("keyword = %s, category_id = %d, page = %d, limit = %d",
                     keyword, categoryId, page, limit));
 
-            Page<ProductResponse> productPage = productService.getAllProducts(keyword, categoryId, pageRequest);
+            List<ProductResponse> productResponses = productRedisService
+                    .getAllProducts(keyword, categoryId, pageRequest);
+            if(productResponses == null) {
+                Page<ProductResponse> productPage = productService
+                        .getAllProducts(keyword, categoryId, pageRequest);
+                // Lấy tổng số trang
+                totalPages = productPage.getTotalPages();
+                productResponses = productPage.getContent();
+                productRedisService.saveAllProducts(
+                        productResponses,
+                        keyword,
+                        categoryId,
+                        pageRequest
+                );
+            }
 
-            int totalPages = productPage.getTotalPages();
-            List<ProductResponse> products = productPage.getContent();
-
-
-            ProductListResponse productListResponse = ProductListResponse.builder()
-                    .products(products)
+            return ResponseEntity.ok(ProductListResponse
+                    .builder()
+                    .products(productResponses)
                     .totalPages(totalPages)
-                    .build();
-
-            return ResponseEntity.ok().body(productListResponse);
+                    .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -212,6 +229,8 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
         try {
             Product updateProduct = productService.updateProduct(id, productDto);
@@ -224,6 +243,8 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Operation(security = { @SecurityRequirement(name = "bearer-key") })
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
         try {
             productService.deleteProduct(id);
@@ -234,32 +255,32 @@ public class ProductController {
         return ResponseEntity.ok("Delete product by id = " + id);
     }
 
-    @PostMapping("/genData")
-    public ResponseEntity<String> genDataProducts() {
-        Faker faker = new Faker();
-        for (int i = 0; i < 10000; i++) {
-
-            // If product name exist -> continue
-            String productName = faker.commerce().productName();
-            if (productService.existsByName(productName)) {
-                continue;
-            }
-
-            ProductDto productDto = ProductDto.builder()
-                    .name(productName)
-                    .price((float) faker.number().numberBetween(10, 50000000))
-                    .description(faker.lorem().sentence())
-                    .thumbnail("")
-                    .categoryId((long) faker.number().numberBetween(1, 4))
-                    .build();
-
-            try {
-                productService.createProduct(productDto);
-            } catch (Exception e) {
-                ResponseEntity.badRequest().body(e.getMessage());
-            }
-        }
-
-        return ResponseEntity.ok("Fake 1 millions product records successfully!");
-    }
+//    @PostMapping("/genData")
+//    public ResponseEntity<String> genDataProducts() {
+//        Faker faker = new Faker();
+//        for (int i = 0; i < 10000; i++) {
+//
+//            // If product name exist -> continue
+//            String productName = faker.commerce().productName();
+//            if (productService.existsByName(productName)) {
+//                continue;
+//            }
+//
+//            ProductDto productDto = ProductDto.builder()
+//                    .name(productName)
+//                    .price((float) faker.number().numberBetween(10, 50000000))
+//                    .description(faker.lorem().sentence())
+//                    .thumbnail("")
+//                    .categoryId((long) faker.number().numberBetween(1, 4))
+//                    .build();
+//
+//            try {
+//                productService.createProduct(productDto);
+//            } catch (Exception e) {
+//                ResponseEntity.badRequest().body(e.getMessage());
+//            }
+//        }
+//
+//        return ResponseEntity.ok("Fake 1 millions product records successfully!");
+//    }
 }

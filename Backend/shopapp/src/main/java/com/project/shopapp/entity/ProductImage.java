@@ -9,7 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Data
 @Entity
 @Table(name = "product_images")
 public class ProductImage {

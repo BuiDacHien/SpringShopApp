@@ -10,7 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Data
 @Entity
 @Table(name = "order_details")
 public class OrderDetail {
