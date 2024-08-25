@@ -28,6 +28,10 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  flyway:
+    locations: classpath:/db/migration,classpath:/dev/db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
 
 
 # Create variable environment of api request
@@ -39,6 +43,7 @@ api:
 jwt:
   expiration: 2592000 # 30 days
   secretKey: daf66e01593f61a15b857cf433aae03a005812b31234e149036bcc8dee755dbb
+  expiration-refresh-token: 5184000 # 60 days
 
 #logging.level.org.springframework.security: DEBUG
 logging:

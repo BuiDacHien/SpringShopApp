@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -29,11 +28,21 @@ public class Token {
     @Column(name = "expiration_date")
     private LocalDateTime expirationDate;
 
-    @Column(name = "revoke")
-    private boolean revoke;
+    // Ám chỉ token bị khóa hay không kể cả khi còn hạn
+    @Column(name = "is_revoked")
+    private boolean isRevoked;
 
     @Column(name = "expired")
     private boolean expired;
+
+    @Column(name = "is_mobile", columnDefinition = "TINYINT(1)")
+    private boolean isMobile;
+
+    @Column(name = "refresh_token", length = 255)
+    private String refreshToken;
+
+    @Column(name = "refresh_expiration_date")
+    private LocalDateTime refreshExpirationDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -5,12 +5,14 @@ import com.project.shopapp.components.LocalizationUtils;
 import com.project.shopapp.dto.UpdateUserDto;
 import com.project.shopapp.dto.UserDto;
 import com.project.shopapp.entity.Role;
+import com.project.shopapp.entity.Token;
 import com.project.shopapp.entity.User;
 import com.project.shopapp.exception.DataAlreadyExistException;
 import com.project.shopapp.exception.InValidParamException;
 import com.project.shopapp.exception.PermissionDenyException;
 import com.project.shopapp.exception.ResourceNotFoundException;
 import com.project.shopapp.repository.RoleRepository;
+import com.project.shopapp.repository.TokenRepository;
 import com.project.shopapp.repository.UserRepository;
 import com.project.shopapp.service.UserService;
 import com.project.shopapp.utils.CommonStrings;
@@ -38,6 +40,9 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
 
     private final LocalizationUtils localizationUtils;
+
+    private final TokenRepository tokenRepository;
+
 
     @Override
     @Transactional
@@ -179,5 +184,11 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new ResourceNotFoundException("User not found");
         }
+    }
+
+    @Override
+    public User getUserDetailsFromRefreshToken(String refreshToken) throws Exception {
+        Token existingToken = tokenRepository.findByRefreshToken(refreshToken);
+        return getUserDetailsFromToken(existingToken.getToken());
     }
 }

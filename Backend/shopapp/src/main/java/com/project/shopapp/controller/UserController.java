@@ -1,20 +1,25 @@
 package com.project.shopapp.controller;
 
 import com.project.shopapp.dto.*;
+import com.project.shopapp.entity.Token;
 import com.project.shopapp.entity.User;
 import com.project.shopapp.response.LoginResponse;
 import com.project.shopapp.response.RegisterResponse;
 import com.project.shopapp.response.UserResponse;
+import com.project.shopapp.service.TokenService;
 import com.project.shopapp.service.UserService;
 import com.project.shopapp.utils.CommonStrings;
 import com.project.shopapp.components.LocalizationUtils;
+import com.project.shopapp.utils.Constant;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +33,7 @@ import java.util.Objects;
 public class UserController {
     private final UserService userService;
     private final LocalizationUtils localizationUtils;
+    private final TokenService tokenService;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody UserDto userDto, BindingResult result) {
@@ -59,7 +65,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody UserLoginDto userLoginDto, BindingResult result) {
+    public ResponseEntity<?> login(@Valid @RequestBody UserLoginDto userLoginDto, BindingResult result, HttpServletRequest request) {
         try {
             if (result.hasErrors()) {
                 List<String> errorMessages = result.getFieldErrors()
@@ -68,19 +74,59 @@ public class UserController {
                 return ResponseEntity.badRequest().body(LoginResponse.builder().message(errorMessages.toString()).build());
             }
 
-
             String token = userService.loginUser(
                     userLoginDto.getPhoneNumber(),
                     userLoginDto.getPassword(),
-                    userLoginDto.getRoleId() == null ? 1 : userLoginDto.getRoleId());
+                    userLoginDto.getRoleId() == null ? Constant.NUMBER_ONE : userLoginDto.getRoleId());
+
+            String userAgent = request.getHeader("User-Agent");
+            User userDetail = userService.getUserDetailsFromToken(token);
+            Token jwtToken = tokenService.addToken(userDetail, token, isMobileDevice(userAgent));
+
+
             return ResponseEntity.ok(LoginResponse.builder()
                     .message(localizationUtils.getLocalizedMessage(CommonStrings.LOGIN_SUCCESSFULLY))
-                    .token(token)
+                    .token(jwtToken.getToken())
+                    .tokenType(jwtToken.getTokenType())
+                    .refreshToken(jwtToken.getRefreshToken())
+                    .username(userDetail.getUsername())
+                    .roles(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                    .id(userDetail.getId())
                     .build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(LoginResponse.builder()
                     .message(localizationUtils.getLocalizedMessage(CommonStrings.LOGIN_FAILED, e.getMessage()))
                     .build());
+        }
+    }
+
+    private boolean isMobileDevice(String userAgent) {
+        // Kiểm tra User-Agent header để xác định thiết bị di động
+        return userAgent.toLowerCase().contains("mobile");
+    }
+
+    @PostMapping("/refreshToken")
+    public ResponseEntity<LoginResponse> refreshToken(
+            @Valid @RequestBody RefreshTokenDto refreshTokenDto
+    ) {
+        try {
+            User userDetail = userService.getUserDetailsFromRefreshToken(refreshTokenDto.getRefreshToken());
+            Token jwtToken = tokenService.refreshToken(refreshTokenDto.getRefreshToken(), userDetail);
+            return ResponseEntity.ok(LoginResponse.builder()
+                    .message("Refresh token successfully")
+                    .token(jwtToken.getToken())
+                    .tokenType(jwtToken.getTokenType())
+                    .refreshToken(jwtToken.getRefreshToken())
+                    .username(userDetail.getUsername())
+                    .roles(userDetail.getAuthorities().stream().map(item -> item.getAuthority()).toList())
+                    .id(userDetail.getId())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    LoginResponse.builder()
+                            .message(localizationUtils.getLocalizedMessage(CommonStrings.LOGIN_FAILED, e.getMessage()))
+                            .build()
+            );
         }
     }
 

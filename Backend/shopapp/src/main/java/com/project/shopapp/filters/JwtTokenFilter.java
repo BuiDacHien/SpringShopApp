@@ -85,6 +85,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 // Health Check
                 Pair.of(String.format("%s/healthcheck/health", apiBasePath), "GET"),
                 Pair.of(String.format("%s/actuator/**", apiBasePath), "GET"),
+                Pair.of(String.format("%s/users/refreshToken", apiBasePath), "POST"),
 
                 // Swagger
                 Pair.of("/api-docs","GET"),
